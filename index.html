@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Family Archive Access</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #fff;
+    }
+    #access-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #access-modal {
+      transform: translateX(-8vw);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    #access-modal h2 {
+      font-size: 2.5em;
+      font-weight: 800;
+      margin-bottom: 2.5em;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+    }
+    input {
+      font-size: 1.3em;
+      padding: 0.5em 1em;
+      border: 1.2px solid #ccc;
+      border-radius: 0.5em;
+      width: 22em;
+      max-width: 90vw;
+    }
+    button {
+      padding: 0.6em 1.2em;
+      font-size: 1.2em;
+      background: #181818;
+      color: white;
+      border: none;
+      border-radius: 0.5em;
+      cursor: pointer;
+    }
+    #error {
+      color: crimson;
+      font-size: 1em;
+      min-height: 1.5em;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <div id="access-overlay">
+    <div id="access-modal">
+      <h2>Enter Album Key & Password</h2>
+      <form id="access-form">
+        <input type="text" name="album" placeholder="Album key (e.g. vacation2024)" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit">Unlock Album</button>
+        <div id="error"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('access-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const album = this.album.value.trim();
+      const password = this.password.value;
+
+      if (!album || !password) return;
+
+      const res = await fetch(`/albums/${encodeURIComponent(album)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `password=${encodeURIComponent(password)}`
+      });
+
+      const text = await res.text();
+
+      if (text.includes('<!DOCTYPE html>')) {
+        document.open();
+        document.write(text);
+        document.close();
+      } else {
+        document.getElementById('error').textContent = 'Incorrect key or password.';
+      }
+    });
+  </script>
+
+
+
+</body>
+</html>

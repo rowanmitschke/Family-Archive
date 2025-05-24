@@ -1,0 +1,20 @@
+# Basic .gitignore for static site
+node_modules/
+.DS_Store
+*.log
+
+# Don't commit photo albums
+/albums/
+
+# Don't commit password metadata (if external)
+/secrets/
+/*.env
+
+# Ignore metadata output if sensitive
+*/metadata.json
+
+# Node modules
+/node_modules/
+
+# Logs
+npm-debug.log*

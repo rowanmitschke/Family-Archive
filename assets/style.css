@@ -1,0 +1,110 @@
+
+body {
+    font-family: system-ui, sans-serif;
+    background: #f8f8f8;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+  
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+  }
+  
+  header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+  }
+  
+  header p {
+    font-size: 1.1rem;
+    color: #555;
+  }
+  
+  main#gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 1rem;
+  }
+  
+  main#gallery img {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 10px;
+    transition: transform 0.2s ease;
+  }
+
+  #gallery img {
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    display: block;
+    margin: 10px;
+    object-fit: contain;
+  }
+  
+  
+  main#gallery img:hover {
+    transform: scale(1.03);
+  }
+  
+  footer {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #888;
+    padding: 2rem 1rem;
+  }
+  
+  #tag-bar {
+    margin: 1rem 0;
+    text-align: center;
+  }
+  
+  .tag-pill {
+    background: #333;
+    color: #fff;
+    padding: 0.3em 0.9em;
+    border-radius: 999px;
+    margin: 0.2em;
+    font-size: 0.95em;
+    cursor: pointer;
+    border: 1px solid #555;
+  }
+  
+  .tag-pill.active-tag {
+    background: #fff;
+    color: #000;
+    font-weight: bold;
+  }
+
+  .upload-btn {
+    background: #222;
+    color: #fff;
+    padding: 0.4em 1em;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .upload-btn:hover {
+    background: #444;
+  }
+  
+  #photo-modal img {
+    border-radius: 8px;
+  }
+  #photo-modal button {
+    background: #181818;
+    color: #fff;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #photo-modal span {
+    color: #333;
+  }
+  

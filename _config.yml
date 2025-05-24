@@ -1,0 +1,7 @@
+# GitHub Pages config for Jekyll (safe defaults)
+title: Family Archive
+description: Family photo album gallery hosted on GitHub Pages.
+theme: minima
+exclude:
+  - node_modules
+  - vendor
