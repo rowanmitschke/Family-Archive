@@ -81,11 +81,7 @@ app.post('/albums/:name', (req, res) => {
     const album = req.params.name;
     const password = req.body.password;
   
-    const passwords = {
-      mitschkegunter: 'cheese',
-      vacation2024: 'beachfun',
-      family: 'onlyus'
-    };
+    const passwords = require('./passwords.json');
   
     if (passwords[album] && password === passwords[album]) {
       req.session[`access_${album}`] = true;

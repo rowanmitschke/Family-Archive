@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title><%= albumName %></title>
+  <link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Family Archive</h1>
+    <p>Viewing album: <%= albumName %></p>
+    <nav id="tag-bar"></nav>    
+    <button id="open-upload" class="upload-button" style="position: absolute; top: 1rem; right: 1rem;">
+        Upload Photo
+    </button>      
+  </header>
+
+  <main id="gallery">
+    <% if (photos.length) { %>
+      <% photos.forEach(photo => { %>
+        <img src="/albums/<%= albumName %>/<%= photo %>" style="max-width: 300px; margin: 10px;" />
+      <% }) %>
+    <% } else { %>
+      <p>No photos found in this album.</p>
+    <% } %>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Rowan Mitschke</p>
+  </footer>
+
+
+  <script>
+    const album = "<%= albumName %>";
+    const photos = <%- JSON.stringify(
+      photos.map(p => ({
+        ...p,
+        src: `/albums/${albumName}/${p.src}`
+      }))
+    ) %>;
+  </script>
+  
+  <script src="/assets/gallery.js"></script>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('open-upload').onclick = () => {
+        document.getElementById('upload-modal').style.display = 'flex';
+        populateDecadeDropdown();
+        populateSurnames();
+      };
+  
+      function populateDecadeDropdown() {
+        const select = document.getElementById('decade-select');
+        if (select.options.length > 0) return;
+        const currentYear = new Date().getFullYear();
+        for (let y = 1800; y <= currentYear; y += 10) {
+          const label = `${y}-${y + 9}`;
+          const opt = document.createElement('option');
+          opt.value = label;
+          opt.textContent = label;
+          select.appendChild(opt);
+        }
+      }
+  
+      function populateSurnames() {
+        const existing = Array.from(new Set(photos.flatMap(p => p.tags?.surname ? [p.tags.surname] : []))).filter(Boolean);
+        const select = document.getElementById('surname-select');
+        select.innerHTML = '<option disabled selected>Select one...</option>';
+        existing.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+        const customOpt = document.createElement('option');
+        customOpt.value = '__new';
+        customOpt.textContent = 'Add a surname';
+        select.appendChild(customOpt);
+      }
+  
+      document.getElementById('surname-select').onchange = function () {
+        const isNew = this.value === '__new';
+        document.getElementById('surname-new').style.display = isNew ? 'inline-block' : 'none';
+      };
+  
+      document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.onchange = function () {
+          const file = this.files[0];
+          const preview = document.createElement('img');
+          preview.style.maxWidth = '120px';
+          preview.style.margin = '10px';
+          preview.src = URL.createObjectURL(file);
+          document.getElementById('preview-area').appendChild(preview);
+        };
+      });
+  
+      document.getElementById('upload-form').onsubmit = async function (e) {
+        e.preventDefault();
+
+        const front = this.front.files[0];
+        const back = this.back.files[0];
+        const date = this.date.value;
+        const decade = this.decade.value;
+        const surname = this.surname.value === '__new' ? this.surnameNew.value : this.surname.value;
+        const description = this.description.value;
+
+        // 🔧 FIX: explicitly get the people input
+        const peopleInput = document.getElementById('people');
+        const people = peopleInput.value.split(',').map(p => p.trim()).filter(Boolean);
+
+        const formData = new FormData();
+        formData.append('front', front);
+        if (back) formData.append('back', back);
+        formData.append('date', date);
+        formData.append('decade', decade);
+        formData.append('surname', surname);
+        formData.append('description', description);
+        formData.append('people', JSON.stringify(peopleInput.value.split(',').map(p => p.trim())));
+
+        const res = await fetch(`/albums/${album}/upload`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'  // preserve session cookie
+        });
+
+        if (res.ok) {
+            alert('Photo uploaded!');
+            location.reload();
+        } else {
+            alert('Upload failed.');
+        }
+        };
+
+    });
+  </script>  
+  
+
+  <div id="upload-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000a; z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#fff; padding:2rem; border-radius:1em; max-width:600px; width:90%;">
+      <h2>Upload a Photo</h2>
+      <form id="upload-form">
+        <label>Front Photo: <input type="file" name="front" accept="image/*" required></label><br><br>
+        <label>Back Photo (optional): <input type="file" name="back" accept="image/*"></label><br><br>
+
+        <label>Date: <input type="date" name="date"></label><br><br>
+
+        <label>Decade:
+          <select name="decade" id="decade-select"></select>
+        </label><br><br>
+
+        <label>Surname:
+          <select name="surname" id="surname-select">
+            <option disabled selected>Select one...</option>
+          </select>
+        </label>
+        
+        <input type="text" name="surnameNew" id="surname-new" placeholder="New surname" style="display:none;"><br><br>
+
+        <label>People in Photo (comma-separated):
+          <input type="text" name="people" id="people" placeholder="e.g. Anna, John, Grandpa Joe" />
+        </label><br><br>
+          
+
+        <label>Description:<br>
+          <textarea name="description" rows="4" style="width:100%;"></textarea>
+        </label><br><br>
+
+        <div id="preview-area"></div>
+
+        <button type="submit">Submit</button>
+        <button type="button" onclick="document.getElementById('upload-modal').style.display='none'">Cancel</button>
+      </form>
+    </div>
+  </div>  
+</body>
+</html>
