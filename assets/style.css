@@ -64,13 +64,21 @@ body {
   
   .tag-pill {
     background: #333;
-    color: #fff;
-    padding: 0.3em 0.9em;
-    border-radius: 999px;
+    color: transparent;
     margin: 0.2em;
-    font-size: 0.95em;
+
+    border: 2px solid #111;
+    padding: 0.4em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    border-radius: 6px;
     cursor: pointer;
-    border: 1px solid #555;
+    transition: all 0.25s ease;
+  }
+
+  .tag-pill:hover {
+    background: transparent;
+    color: black;
   }
   
   .tag-pill.active-tag {
@@ -79,32 +87,193 @@ body {
     font-weight: bold;
   }
 
-  .upload-btn {
-    background: #222;
-    color: #fff;
-    padding: 0.4em 1em;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  .upload-btn:hover {
-    background: #444;
-  }
-  
-  #photo-modal img {
-    border-radius: 8px;
-  }
-  #photo-modal button {
-    background: #181818;
-    color: #fff;
-    border: none;
-    padding: 0.5em 1em;
+  .upload-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: 2px solid #111;
+    color: #111;
+    padding: 0.4em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
     border-radius: 6px;
     cursor: pointer;
+    transition: all 0.25s ease;
   }
-  #photo-modal span {
+  .upload-button:hover {
+    background: #111;
+    color: white;
+  }
+  
+  #photo-modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;         /* centers inner content horizontally */
+    justify-content: center;
+    background: #fff;
+    border-radius: 12px;
+    max-width: 85vw;
+    max-height: 85vh;
+    padding: 1.5em;
+    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .modal-content img {
+    max-height: 65vh;
+    max-width: 100%;
+    object-fit: contain;
+    margin: 1em 0;
+  }  
+  
+  .modal-content h2,
+    .modal-content .meta-info {
+  text-align: center;
+  color: #333;
+}
+
+  
+  #photo-modal button {
+    transition: all 0.2s ease;
+  }
+  
+  #photo-modal button:hover {
+    background: #ddd;
+  }
+  
+  .modal-container {
+    position: relative;
+    width: 80vw;
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+  }
+  .photo-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 90vh;
+    background: #f6f6f6;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  .photo-frame img {
+    max-height: 70vh;
+    width: auto;
+    object-fit: contain;
+    border-bottom: 1px solid #ccc;
+  }
+  .photo-info {
+    padding: 1em;
+    text-align: center;
+  }
+  .photo-info h2 {
+    margin: 0;
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+  
+  .photo-info p {
+    margin: 0.2em 0;
+    color: #666;
+    font-size: 0.95em;
+  }
+  
+  .photo-info .people {
+    margin-top: 0.5em;
+    font-weight: 500;
+  }
+  
+  .modal-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2em;
+    color: #999;
+    cursor: pointer;
+    user-select: none;
+    z-index: 10;
+  }
+  
+  .modal-arrow:hover {
+    color: #222;
+  }
+  
+  .modal-arrow.left {
+    left: 1vw;
+  }
+  
+  .modal-arrow.right {
+    right: 1vw;
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 1em;
+    left: 1em;
+    font-size: 1.3em;
+    color: #888;
+    cursor: pointer;
+  }
+
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1em 5em;
+    background-color: transparent;
+    
+  }
+  .nav-logo {
+    font-weight: bold;
+    font-size: 1.4em;
+    text-decoration: none;
+    color: #000;
+  }
+  .nav-right {
+    display: flex;
+    gap: 2.5em;
+  }
+  .nav-link {
+    text-decoration: none;
     color: #333;
+    font-weight: 500;
+    margin: 0.2em;
+
+    border: 2px solid transparent;
+    padding: 0.3em 0.6em;
+    font-size: 1em;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .nav-link.active {
+    color: black;
+    font-style: underline;
+  }
+  .nav-link:hover {
+    background: rgb(226, 226, 226);
+    cursor: pointer;
+    transition: all 0.1s ease;
+  }
+  
+  .logo {
+    height: 150px;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
   }
   

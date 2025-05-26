@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+<script>
+    history.pushState(null, "", window.location.href); // prevent accidental back
+    window.onpopstate = function () {
+        window.location.href = "/"; // send them to index.html
+    };
+</script>
+      
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -7,19 +14,29 @@
   <link rel="stylesheet" href="/assets/style.css" />
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <img src="/assets/piktos_logo.png" alt="Family Archive Logo" class="logo" />
+        </div>
+        <div class="nav-right">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/about" class="nav-link">About</a>
+          <a href="/login" class="nav-link">Login</a>
+        </div>
+      </nav>
   <header>
     <h1>Family Archive</h1>
     <p>Viewing album: <%= albumName %></p>
     <nav id="tag-bar"></nav>    
     <button id="open-upload" class="upload-button" style="position: absolute; top: 1rem; right: 1rem;">
-        Upload Photo
+        ⬆︎ Upload
     </button>      
   </header>
 
   <main id="gallery">
     <% if (photos.length) { %>
       <% photos.forEach(photo => { %>
-        <img src="/albums/<%= albumName %>/<%= photo %>" style="max-width: 300px; margin: 10px;" />
+        <img src="/albums/<%= albumName %>/<%= photo.src %>" style="max-width: 300px; margin: 10px;" />
       <% }) %>
     <% } else { %>
       <p>No photos found in this album.</p>
@@ -39,6 +56,8 @@
         src: `/albums/${albumName}/${p.src}`
       }))
     ) %>;
+    const allPhotos = [...photos]; // includes both front and back
+
   </script>
   
   <script src="/assets/gallery.js"></script>
@@ -56,7 +75,7 @@
         if (select.options.length > 0) return;
         const currentYear = new Date().getFullYear();
         for (let y = 1800; y <= currentYear; y += 10) {
-          const label = `${y}-${y + 9}`;
+          const label = `${y}s`;
           const opt = document.createElement('option');
           opt.value = label;
           opt.textContent = label;
@@ -118,12 +137,12 @@
         formData.append('surname', surname);
         formData.append('description', description);
         formData.append('people', JSON.stringify(peopleInput.value.split(',').map(p => p.trim())));
-
+        
         const res = await fetch(`/albums/${album}/upload`, {
             method: 'POST',
-            body: formData,
-            credentials: 'same-origin'  // preserve session cookie
+            body: formData
         });
+
 
         if (res.ok) {
             alert('Photo uploaded!');
@@ -141,6 +160,7 @@
     <div style="background:#fff; padding:2rem; border-radius:1em; max-width:600px; width:90%;">
       <h2>Upload a Photo</h2>
       <form id="upload-form">
+
         <label>Front Photo: <input type="file" name="front" accept="image/*" required></label><br><br>
         <label>Back Photo (optional): <input type="file" name="back" accept="image/*"></label><br><br>
 
@@ -174,5 +194,39 @@
       </form>
     </div>
   </div>  
+  <!-- Modal markup (put just before </body>) -->
+<div id="photo-modal" style="display: none;">
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="photo-title">Photo Title</h2>
+          <p id="photo-date">Date &mdash; Decade</p>
+        </div>
+  
+        <div class="modal-body">
+          <div class="photo-nav left" id="modal-left">&#10094;</div>
+  
+          <div class="photo-strip">
+            <img id="left-preview" class="side-preview" />
+            <img id="main-photo" />
+            <img id="right-preview" class="side-preview" />
+          </div>
+  
+          <div class="photo-nav right" id="modal-right">&#10095;</div>
+        </div>
+  
+        <div class="modal-footer">
+          <p id="photo-people">People: ...</p>
+          <div>
+            <button id="photo-share">Share</button>
+            <button id="photo-close">✖</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 </body>
+
+  
 </html>

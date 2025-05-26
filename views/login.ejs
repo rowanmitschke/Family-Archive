@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Login - Family Archive</title>
+  <link rel="stylesheet" href="/assets/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-left">
+        <img src="/assets/piktos_logo.png" alt="Family Archive Logo" class="logo" />
+    </div>
+    <div class="nav-right">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/about" class="nav-link">About</a>
+      <a href="/login" class="nav-link active">Login</a>
+    </div>
+  </nav>
+
+  <main style="max-width: 400px; margin: 2em auto; padding: 1em;">
+    <h1>Login</h1>
+    <form method="POST" action="/login">
+      <label>Email:</label><br>
+      <input type="email" name="email" required style="width:100%; margin-bottom:1em;"><br>
+
+      <label>Password:</label><br>
+      <input type="password" name="password" required style="width:100%; margin-bottom:1em;"><br>
+
+      <button type="submit" style="width:100%;">Log In</button>
+    </form>
+  </main>
+</body>
+</html>

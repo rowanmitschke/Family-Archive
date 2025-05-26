@@ -87,100 +87,215 @@ function resizeToArea(img, area = TARGET_AREA) {
 
 function createModal(photo) {
     const modal = document.createElement('div');
-    modal.id = "photo-modal";
-    modal.style.position = "fixed";
-    modal.style.top = 0;
-    modal.style.left = 0;
-    modal.style.width = "100vw";
-    modal.style.height = "100vh";
-    modal.style.background = "rgba(0,0,0,0.85)";
-    modal.style.display = "flex";
-    modal.style.alignItems = "center";
-    modal.style.justifyContent = "center";
-    modal.style.zIndex = 10000;
+    modal.id = 'photo-modal';
+    Object.assign(modal.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100vw',
+      height: '100vh',
+      background: 'rgba(0,0,0,0.9)',
+      zIndex: '10000',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'visible'
+    });
   
-    const container = document.createElement('div');
-    container.style.position = "relative";
-    container.style.maxWidth = "90%";
-    container.style.maxHeight = "90%";
-    container.style.background = "#fff";
-    container.style.padding = "1em";
-    container.style.borderRadius = "1em";
-    container.style.display = "flex";
-    container.style.flexDirection = "column";
-    container.style.alignItems = "flex-start";
-    container.style.overflowY = "auto";
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content'; // we'll style this in CSS
+    Object.assign(modalContent.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#fff',
+      borderRadius: '12px',
+      padding: '2em',
+      maxWidth: '85vw',
+      maxHeight: '85vh',
+      overflow: 'visible',
+      textAlign: 'center',
+      position: 'relative'  // important for proper layout
+    });
   
-    const img = document.createElement('img');
-    img.src = photo.src;
-    img.style.maxWidth = "100%";
-    img.style.maxHeight = "70vh";
-    img.style.alignSelf = "center";
-    img.style.marginBottom = "1em";
+    modal.appendChild(modalContent);
   
-    const infoRow = document.createElement('div');
-    infoRow.style.display = "flex";
-    infoRow.style.alignItems = "flex-start";
-    infoRow.style.width = "100%";
-    infoRow.style.gap = "1em";
+    let currentIndex = photos.findIndex(p => p.src === photo.src);
+    if (currentIndex < 0) return;
   
-    // ✅ Check for back photo
-    const hasBack = photos.some(p =>
-      p.src === photo.src.replace(/\.jpg$/, '_back.jpg')
-    );
-  
-    // 🌀 Only show flip button if back exists
-    if (hasBack) {
-      const flipBtn = document.createElement('button');
-      flipBtn.textContent = "↺ Flip";
-      flipBtn.style.position = "absolute";
-      flipBtn.style.fontSize = "1em";
-      flipBtn.style.top = "1em";
-      flipBtn.style.left = "1em";
-      flipBtn.onclick = () => {
-        const isBack = img.src.includes('_back');
-        const base = photo.src.replace(/_back\.\w+$/, '').replace(/\.\w+$/, '');
-        img.src = isBack ? base + ".jpg" : base + "_back.jpg";
-      };
-      infoRow.appendChild(flipBtn);
-    }
-  
-    const infoBlock = document.createElement('div');
-    infoBlock.style.flex = "1";
-  
-    const desc = document.createElement('p');
-    desc.textContent = photo.description || '';
-    desc.style.marginBottom = "1em";
-    desc.style.fontSize = "1.5em";
-    desc.style.fontWeight = "bold";
-  
-    infoBlock.appendChild(desc);
-  
-    if (photo.tags) {
-      for (let key in photo.tags) {
-        const line = document.createElement('div');
-        line.textContent = `${key}: ${Array.isArray(photo.tags[key]) ? photo.tags[key].join(', ') : photo.tags[key]}`;
-        infoBlock.appendChild(line);
+    function makePreview(p, isMain = false) {
+        const img = document.createElement('img');
+        img.src = p.src;
+        Object.assign(img.style, {
+          maxHeight: isMain ? '65vh' : '50vh',
+          opacity: isMain ? '1' : '0.3',
+          transform: isMain ? 'scale(1)' : 'scale(0.85)',
+          cursor: isMain ? 'default' : 'pointer',
+          transition: 'all 0.3s ease',
+          borderRadius: '8px',
+        });
+      
+        if (!isMain) {
+          img.onclick = () => render(photos.indexOf(p));
+        }
+      
+        return img;
       }
+      
+
+    function render(index) {
+      modalContent.innerHTML = ''; // Clear content
+  
+      const photoData = photos[index];
+      const parts = photoData.src.split('/');
+      const filename = parts.pop();
+      const albumPath = parts.join('/') + '/';
+      const ext = filename.split('.').pop();
+      const baseName = filename.replace(/_back\.\w+$/, '').replace(/\.\w+$/, '');
+      const frontSrc = `${albumPath}${baseName}.${ext}`;
+      const backSrc = `${albumPath}${baseName}_back.${ext}`;
+      const hasBack = allPhotos.some(p => p.src === backSrc);
+  
+      // Header
+      const header = document.createElement('div');
+      header.innerHTML = `
+        <h2 style="margin: 0 0 0.4em;">${photoData.description || 'Untitled'}</h2>
+        <div style="font-size: 0.9em; color: #555;">
+          ${photoData.tags?.date || 'Unknown date'} · ${photoData.tags?.decade || 'Unknown decade'}
+        </div>
+      `;
+  
+      // Flip Button
+      const flipBtn = document.createElement('button');
+      flipBtn.textContent = '↺ Flip';
+      Object.assign(flipBtn.style, {
+        position: 'absolute',
+        top: '1em',
+        right: '1.2em',
+        fontSize: '1em',
+        padding: '0.4em 0.8em',
+        cursor: 'pointer',
+        borderRadius: '6px',
+        border: 'none',
+        background: '#111',
+        color: '#fff',
+        display: hasBack ? 'block' : 'none'
+      });
+  
+      // Photo Strip container
+        const row = document.createElement('div');
+            Object.assign(row.style, {
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center',
+            width: '100%',
+            height: '70vh',
+            position: 'relative',
+            });
+
+            // Left preview container
+            const leftCell = document.createElement('div');
+            leftCell.style.display = 'flex';
+            leftCell.style.justifyContent = 'flex-end';
+            leftCell.style.paddingRight = '2em';
+
+            // Center (main) container
+            const centerCell = document.createElement('div');
+            centerCell.style.display = 'flex';
+            centerCell.style.justifyContent = 'center';
+
+            // Right preview container
+            const rightCell = document.createElement('div');
+            rightCell.style.display = 'flex';
+            rightCell.style.justifyContent = 'flex-start';
+            rightCell.style.paddingLeft = '2em';
+
+            // Main image
+            const mainImg = makePreview(photoData, true);
+            mainImg.style.maxHeight = '65vh';
+            mainImg.style.zIndex = '2';
+            centerCell.appendChild(mainImg);
+
+            // Flip logic
+            let isBack = false;
+            flipBtn.onclick = () => {
+            isBack = !isBack;
+            mainImg.src = isBack ? backSrc : frontSrc;
+            };
+
+            // Previews
+            function findPreviousValid(index) {
+                for (let i = index - 1; i >= 0; i--) {
+                  if (!photos[i].src.includes('_back')) return photos[i];
+                }
+                return null;
+              }
+              
+            function findNextValid(index) {
+                for (let i = index + 1; i < photos.length; i++) {
+                  if (!photos[i].src.includes('_back')) return photos[i];
+                }
+                return null;
+              }
+
+              const prevPhoto = findPreviousValid(index);
+              if (prevPhoto) {
+                const prev = makePreview(prevPhoto);
+                leftCell.appendChild(prev);
+              }
+              
+              const nextPhoto = findNextValid(index);
+              if (nextPhoto) {
+                const next = makePreview(nextPhoto);
+                rightCell.appendChild(next);
+              }
+                         
+             
+            row.appendChild(leftCell);
+            row.appendChild(centerCell);
+            row.appendChild(rightCell);
+
+  
+      
+  
+      // People tags
+      const peopleRow = document.createElement('div');
+      if (photoData.tags?.people?.length) {
+        peopleRow.textContent = 'People: ' + photoData.tags.people.join(', ');
+        Object.assign(peopleRow.style, {
+          textAlign: 'center',
+          marginTop: '1em',
+          color: '#333',
+          fontSize: '0.95em'
+        });
+      }
+  
+      // Close
+      const closeBtn = document.createElement('span');
+      closeBtn.textContent = 'X';
+      Object.assign(closeBtn.style, {
+        position: 'absolute',
+        top: '1em',
+        left: '1.2em',
+        fontSize: '1.5em',
+        cursor: 'pointer',
+        color: 'black'
+      });
+      closeBtn.onclick = () => modal.remove();
+  
+      modalContent.appendChild(header);
+      modalContent.appendChild(flipBtn);
+      modalContent.appendChild(closeBtn);
+      modalContent.appendChild(row);
+      modalContent.appendChild(peopleRow);
     }
   
-    infoRow.appendChild(infoBlock);
-  
-    const closeBtn = document.createElement('span');
-    closeBtn.textContent = "✖";
-    closeBtn.style.position = "absolute";
-    closeBtn.style.top = "0.5em";
-    closeBtn.style.right = "0.8em";
-    closeBtn.style.fontSize = "1.5em";
-    closeBtn.style.cursor = "pointer";
-    closeBtn.onclick = () => modal.remove();
-  
-    container.appendChild(img);
-    container.appendChild(infoRow);
-    container.appendChild(closeBtn);
-    modal.appendChild(container);
+    render(currentIndex);
     document.body.appendChild(modal);
   }
+  
+  
   
   
   

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <link rel="stylesheet" href="/assets/style.css" />
+
+  <title>Family Archive Access</title>
+  <nav class="navbar">
+    <div class="nav-left">
+      <img src="/assets/piktos_logo.png" alt="Family Archive Logo" class="logo" />
+    </div>
+    <div class="nav-right">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/about" class="nav-link">About</a>
+      <a href="/login" class="nav-link">Login</a>
+    </div>
+  </nav>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+    }
+  
+    #access-overlay {
+      position: relative;
+      top: 8em;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    #access-modal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    h2 {
+      font-size: 2.5em;
+      font-weight: 500;
+      margin-bottom: 2em;
+    }
+  
+    .stacked-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      width: 100%;
+      max-width: 24em;
+    }
+  
+    .input-row {
+      display: flex;
+      width: 100%;
+    }
+  
+    input {
+      font-size: 1.3em;
+      padding: 0.5em 1em;
+      border: 1.5px solid #ccc;
+      border-right: none;
+      border-radius: 0.5em 0 0 0.5em;
+      flex: 1;
+      transition: border 0.3s, background 0.3s;
+    }
+  
+    input:focus {
+      outline: none;
+      border-color: #333;
+    }
+  
+    input.readonly {
+      background: #eee;
+      cursor: not-allowed;
+    }
+  
+    button {
+      font-size: 1.4em;
+      background: #181818;
+      color: white;
+      border: none;
+      border-radius: 0 0.5em 0.5em 0;
+      padding: 0 1em;
+      cursor: pointer;
+      transition: background 0.3s, content 0.3s;
+    }
+
+    input:focus + button,
+    button:focus {
+      background: #000;
+    }
+
+    button.valid::before {
+      content: "✓";
+    }
+
+    button:not(.valid)::before {
+      content: "→";
+    }
+
+  
+    #password-row {
+      display: none;
+      margin-top: 1.5em;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+  
+    #password-row.visible {
+      display: flex;
+      opacity: 1;
+    }
+  
+    .checkmark {
+      margin-left: 0.6em;
+      font-size: 1.4em;
+      color: green;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+  
+    .checkmark.visible {
+      opacity: 1;
+    }
+  
+    #error {
+      color: crimson;
+      font-size: 1em;
+      min-height: 1.5em;
+      margin-top: 1em;
+    }
+  </style>
+  
+</head>
+<body>
+  
+  <div id="access-overlay">
+      <div id="access-modal">
+        <h2>Enter Album Info</h2>
+      
+        <div class="stacked-inputs">
+          <div class="input-row">
+            <input type="text" id="album-input" placeholder="Album key (e.g. vacation2024)" />
+            <button id="album-arrow"></button>
+          </div>
+          <span id="album-check" class="checkmark">✔</span>
+      
+          <div class="input-row" id="password-row">
+            <input type="password" id="password-input" placeholder="Password" />
+            <button id="password-arrow"></button>
+          </div>
+        </div>
+      
+        <div id="error"></div>
+      </div>
+      
+  </div>
+
+  <script>
+    const albumInput = document.getElementById('album-input');
+    const passwordInput = document.getElementById('password-input');
+    const albumArrow = document.getElementById('album-arrow');
+    const passwordArrow = document.getElementById('password-arrow');
+    const passwordRow = document.getElementById('password-row');
+    const errorDiv = document.getElementById('error');
+  
+    let album = '';
+  
+    albumArrow.onclick = async () => {
+  album = albumInput.value.trim();
+  if (!album) return;
+
+  try {
+    const res = await fetch(`/albums/${encodeURIComponent(album)}`);
+    const text = await res.text();
+
+    if (res.status === 200 && text.includes('Enter password')) {
+      // Album exists and requires password
+      albumInput.readOnly = true;
+      albumInput.classList.add('readonly');
+      albumArrow.classList.add('valid');
+      passwordRow.classList.add('visible');
+      errorDiv.textContent = '';
+      passwordInput.focus();
+    } else if (res.status === 200 && text.includes('<!DOCTYPE html>')) {
+      // Public album with no password, redirect immediately
+      window.location.href = `/albums/${album}`;
+    } else {
+      errorDiv.textContent = 'Invalid album key.';
+    }
+  } catch (err) {
+    console.error(err);
+    errorDiv.textContent = 'An error occurred. Please try again.';
+  }
+};
+
+  
+
+    passwordArrow.onclick = async () => {
+    const password = passwordInput.value;
+    if (!password || !album) return;
+
+    const res = await fetch(`/albums/${encodeURIComponent(album)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `password=${encodeURIComponent(password)}`
+    });
+
+    if (res.redirected) {
+      // Server issued a redirect
+      window.location.href = res.url;
+    } else {
+      const text = await res.text();
+      errorDiv.textContent = 'Incorrect password.';
+    }
+  };
+
+  </script>
+  
+</body>
+</html>

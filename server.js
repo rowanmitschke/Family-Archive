@@ -23,24 +23,37 @@ app.use(session({
 // Needed to parse form submissions
 app.use(express.urlencoded({ extended: true }));
 
-// Serve index.html from root
 app.get('/', (req, res) => {
-  const filePath = path.join(__dirname, 'index.html');
-  console.log('🔍 Attempting to serve:', filePath);
-  res.sendFile(filePath);
-});
+    res.render('index'); // looks for views/index.ejs
+  });  
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // GET route for album (shows form or success message)
 const fs = require('fs');
+let passwords;
+
+if (fs.existsSync('./passwords.json')) {
+  passwords = require('./passwords.json');
+} else {
+  passwords = require('./passwords.template.json');
+}
+
 
 app.get('/albums/:name', (req, res) => {
     const album = req.params.name;
-    console.log('📦 Incoming session:', req.session); 
     const albumPath = path.join(__dirname, 'albums', album);
     const metadataPath = path.join(albumPath, 'metadata.json');
   
+    // ✅ Make sure this album key exists
+    if (!passwords[album]) {
+        return res.status(404).send('Album does not exist.');
+      }
+    
+    console.log("Session access:", req.session);
+    console.log("Password:", passwords[album])
+    console.log("Requested album:", album);
+      
     if (!req.session[`access_${album}`]) {
       return res.send(`
         <h2>Enter password for ${album}</h2>
@@ -72,6 +85,7 @@ app.get('/albums/:name', (req, res) => {
     });
   });
   
+  
 
 app.use('/albums', express.static(path.join(__dirname, 'albums')));
 
@@ -80,8 +94,6 @@ app.use('/albums', express.static(path.join(__dirname, 'albums')));
 app.post('/albums/:name', (req, res) => {
     const album = req.params.name;
     const password = req.body.password;
-  
-    const passwords = require('./passwords.json');
   
     if (passwords[album] && password === passwords[album]) {
       req.session[`access_${album}`] = true;
@@ -111,42 +123,64 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }); // use the storage config defined above
 
 app.post('/albums/:name/upload', upload.fields([{ name: 'front' }, { name: 'back' }]), (req, res) => {
-  const album = req.params.name;
-  const albumDir = path.join(__dirname, 'albums', album);
-  const metadataPath = path.join(albumDir, 'metadata.json');
-
-  const front = req.files.front?.[0];
-  const back = req.files.back?.[0];
-  const date = req.body.date;
-  const decade = req.body.decade;
-  const surname = req.body.surname;
-  const description = req.body.description;
-  const people = req.body.people ? JSON.parse(req.body.people) : [];
-
-
-  if (!front) return res.status(400).send('Missing front photo');
-
-  const newName = `img_${Date.now()}.jpg`;
-  const finalFront = path.join(albumDir, newName);
-  const finalBack = back ? path.join(albumDir, newName.replace(/\.jpg$/, '_back.jpg')) : null;
-
-  fs.renameSync(front.path, finalFront);
-  if (back) fs.renameSync(back.path, finalBack);
-
-  let metadata = [];
-  if (fs.existsSync(metadataPath)) {
-    metadata = JSON.parse(fs.readFileSync(metadataPath));
-  }
-
-  metadata.push({
-    src: newName,
-    tags: { date, decade, surname, people },
-    description
+    const album = req.params.name;
+    const albumDir = path.join(__dirname, 'albums', album);
+    const metadataPath = path.join(albumDir, 'metadata.json');
+  
+    const front = req.files.front?.[0];
+    const back = req.files.back?.[0];
+    const date = req.body.date;
+    const decade = req.body.decade;
+    const surname = req.body.surname;
+    const description = req.body.description;
+    const people = req.body.people ? JSON.parse(req.body.people) : [];
+  
+    if (!front) return res.status(400).send('Missing front photo');
+  
+    // Ensure album folder exists
+    fs.mkdirSync(albumDir, { recursive: true });
+  
+    // Load existing metadata to count current images
+    let metadata = [];
+    if (fs.existsSync(metadataPath)) {
+      metadata = JSON.parse(fs.readFileSync(metadataPath));
+    }
+  
+    // Generate next image number
+    const nextNum = String(metadata.length + 1).padStart(4, '0'); // e.g. 0001
+    const baseName = `img_${nextNum}`;
+  
+    // Build file paths
+    const frontFilename = `${baseName}.jpg`;
+    const frontPath = path.join(albumDir, frontFilename);
+    fs.renameSync(front.path, frontPath);
+  
+    let backFilename = null;
+    if (back) {
+      backFilename = `${baseName}_back.jpg`;
+      const backPath = path.join(albumDir, backFilename);
+      fs.renameSync(back.path, backPath);
+    }
+  
+    metadata.push({
+      src: frontFilename,
+      tags: { date, decade, surname, people },
+      description
+    });
+  
+    fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+    res.sendStatus(200);
   });
+  
 
-  fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
-  res.sendStatus(200);
+app.get('/about', (req, res) => {
+res.render('about.ejs'); // This will render views/about.ejs
 });
+
+app.get('/login', (req, res) => {
+res.render('login.ejs'); // This will render views/login.ejs
+});
+  
 
 
 // 404 fallback

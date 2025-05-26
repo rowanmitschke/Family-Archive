@@ -1,0 +1,15 @@
+Copyright (c) 2025 Rowan Mitschke
+
+This software is provided for personal, non-commercial use only.
+
+Permission is hereby granted to use, modify, and run this software for personal archival or educational purposes.
+
+Restrictions:
+- This software may not be sold, redistributed, or used for commercial gain.
+- This software may not be hosted as a public-facing service without explicit written permission.
+- Modifications are allowed for personal use but must retain this license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OR DISTRIBUTION OF THIS SOFTWARE.
+
+For licensing beyond personal use, contact: <rowanmitschke>@users.noreply.github.com
+
